@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class Bootstrap : MonoBehaviour
 {
-    //если ентри поинт это просто гробольные регистрации для старта проекта, то ботстрап, уже инит начала работы
    public IEnumerator Run(DIContainer container)
     {
         ILoadingCurtain loadingCurtain = container.Resolve<ILoadingCurtain>();
