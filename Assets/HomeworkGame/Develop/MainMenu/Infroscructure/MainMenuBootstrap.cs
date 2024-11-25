@@ -4,28 +4,9 @@ using UnityEngine;
 public class MainMenuBootstrap : MonoBehaviour
 {
     private DIContainer _container;
+    private SceneSelection _sceneSelection;
 
-    private UserInput _userInput;
-
-    private void Awake()
-    {
-        _userInput = new UserInput();
-    }
-
-    private void Update()
-    {
-        if (_userInput.UserSelect(KeyCode.Alpha1))
-        {
-            Debug.Log("Нажал 1");
-            _container.Resolve<SceneSwitcher>().ProcessSwitchSceneFor(new OutputMainMenuArgs(new GameplayInputArgs(1)));
-        } 
-        
-        if (_userInput.UserSelect(KeyCode.Alpha2))
-        {
-            Debug.Log("Нажал 2");
-            _container.Resolve<SceneSwitcher>().ProcessSwitchSceneFor(new OutputMainMenuArgs(new GameplayInputArgs(2)));
-        }
-    }
+    private bool _isInitialized = false;
 
     public IEnumerator Run(DIContainer container, MainMenuInputArgs maimMenuInputArgs)
     {
@@ -33,12 +14,22 @@ public class MainMenuBootstrap : MonoBehaviour
 
         ProcessRegisrations();
 
+
         yield return new WaitForSeconds(1);
+    }
+
+    private void Update() //imSorry(
+    {
+        if (_isInitialized == false)
+            return;
+
+        _sceneSelection.Update();
     }
 
     private void ProcessRegisrations()
     {
-        //регистрации сцены геймплея
+       _sceneSelection = _container.Resolve<SceneSelection>();
+        _isInitialized = true;
     }
 
   

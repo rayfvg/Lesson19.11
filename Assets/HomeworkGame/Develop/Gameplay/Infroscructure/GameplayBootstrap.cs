@@ -1,12 +1,15 @@
 using System.Collections;
 using UnityEngine;
 
+public enum GameModes
+{
+    Numbers = 1,
+    Letters = 2
+}
+
 public class GameplayBootstrap : MonoBehaviour
 {
     private DIContainer _container;
-
-    private GameNumbers _gameNumbers;
-    private GameLetters _gameLetters;
 
     private IGame _game;
 
@@ -15,32 +18,29 @@ public class GameplayBootstrap : MonoBehaviour
     {
         _container = container;
 
-        ILoadingCurtain loadingCurtain = container.Resolve<ILoadingCurtain>();
-        loadingCurtain.Show();
-
-        if (gameplayInputArgs.LevelNummer == 1)
-            ProcessRegisrationsGameNumbers();
-        if (gameplayInputArgs.LevelNummer == 2)
-            ProcessRegisrationsGameLetters();
+       
+        if (gameplayInputArgs.LevelNumber == (int)GameModes.Numbers)
+            StartGameNumbers();
+        if (gameplayInputArgs.LevelNumber == (int)GameModes.Letters)
+            StartGameLetters();
 
         yield return new WaitForSeconds(1);
-        loadingCurtain.Hide();
 
         _initializedComplited = true;
     }
 
-    private void ProcessRegisrationsGameNumbers()
+    private void StartGameNumbers()
     {
-        _gameNumbers = new GameNumbers(_container);
-        _game = _gameNumbers;
-        _container.Resolve<ICoroutinePerformer>().StartRefrorm(_gameNumbers.ProcessGeneration());
+        GameNumbers gameNumbers = new GameNumbers(_container);
+        _game = gameNumbers;
+        _container.Resolve<ICoroutinePerformer>().StartRefrorm(gameNumbers.ProcessGeneration());
     }
 
-    private void ProcessRegisrationsGameLetters()
+    private void StartGameLetters()
     {
-        _gameLetters = new GameLetters(_container);
-        _game = _gameLetters;
-        _container.Resolve<ICoroutinePerformer>().StartRefrorm(_gameLetters.ProcessGeneration());
+        GameLetters gameLetters = new GameLetters(_container);
+        _game = gameLetters;
+        _container.Resolve<ICoroutinePerformer>().StartRefrorm(gameLetters.ProcessGeneration());
     }
 
     private void Update()

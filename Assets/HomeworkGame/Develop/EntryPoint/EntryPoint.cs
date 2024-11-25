@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class EntryPoint : MonoBehaviour
@@ -21,15 +22,26 @@ public class EntryPoint : MonoBehaviour
         RegisterSceneLoader(projectConteiner);
         RegisterSceneSwitcher(projectConteiner);
 
+        RegisterUserInput(projectConteiner);
+        RegisterSceneSelection(projectConteiner);
+
         projectConteiner.Resolve<ICoroutinePerformer>().StartRefrorm(_gameBootstrap.Run(projectConteiner));
     }
 
+    
 
     private void SetupAppSettings()
     {
         QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = 144;
     }
+
+    private void RegisterUserInput(DIContainer container)
+        => container.RegisterAsSingle(c => new UserInput());
+
+    private void RegisterSceneSelection(DIContainer container)
+        => container.RegisterAsSingle(c => new SceneSelection(container));
+    
 
     private void RegisterResourcesAssetLoader(DIContainer container)
             => container.RegisterAsSingle(c => new ResourcesAssetsLoader());
