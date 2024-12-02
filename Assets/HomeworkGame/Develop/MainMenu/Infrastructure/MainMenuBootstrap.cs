@@ -30,6 +30,8 @@ public class MainMenuBootstrap : MonoBehaviour
     {
        _sceneSelection = _container.Resolve<SceneSelection>();
         _isInitialized = true;
+
+        _container.Initialize();
     }
 
   

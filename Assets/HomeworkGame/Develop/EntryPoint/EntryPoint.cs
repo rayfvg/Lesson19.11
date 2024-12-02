@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using UnityEngine;
 
 public class EntryPoint : MonoBehaviour
@@ -22,8 +23,17 @@ public class EntryPoint : MonoBehaviour
         RegisterSceneLoader(projectConteiner);
         RegisterSceneSwitcher(projectConteiner);
 
+        RegisterSaveLoadService(projectConteiner);
+        RegisterPlayerDataProveder(projectConteiner);
+
+        RegisterWalletService(projectConteiner);
+
         RegisterUserInput(projectConteiner);
         RegisterSceneSelection(projectConteiner);
+
+        RegisterConfigsProviderService(projectConteiner);
+
+        projectConteiner.Initialize();
 
         projectConteiner.Resolve<ICoroutinePerformer>().StartRefrorm(_gameBootstrap.Run(projectConteiner));
     }
@@ -36,12 +46,27 @@ public class EntryPoint : MonoBehaviour
         Application.targetFrameRate = 144;
     }
 
+    private void RegisterWalletService(DIContainer container)
+        => container.RegisterAsSingle(c => new WalletService(c.Resolve<PlayerDataProvider>())).NonLazy();
+
+
+    private void RegisterPlayerDataProveder(DIContainer container)
+        => container.RegisterAsSingle(c => new PlayerDataProvider(c.Resolve<ISaveLoadSerivce>(), c.Resolve<ConfigsProviderService>(), container)).NonLazy();
+
+    private void RegisterSaveLoadService(DIContainer container)
+        => container.RegisterAsSingle<ISaveLoadSerivce>(c => new SaveLoadService(new JsonSerializer(), new LocalDataRepository()));
+
+
+    private void RegisterConfigsProviderService(DIContainer container)
+        => container.RegisterAsSingle(c => new ConfigsProviderService(c.Resolve<ResourcesAssetsLoader>())).NonLazy();
+
+
     private void RegisterUserInput(DIContainer container)
         => container.RegisterAsSingle(c => new UserInput());
 
     private void RegisterSceneSelection(DIContainer container)
         => container.RegisterAsSingle(c => new SceneSelection(container));
-    
+
 
     private void RegisterResourcesAssetLoader(DIContainer container)
             => container.RegisterAsSingle(c => new ResourcesAssetsLoader());
@@ -74,7 +99,7 @@ public class EntryPoint : MonoBehaviour
     private void RegisterSceneLoader(DIContainer container)
    => container.RegisterAsSingle<ISceneLoader>(c => new DefaultSceneLoader());
 
-    
+
     private void RegisterSceneSwitcher(DIContainer container)
     => container.RegisterAsSingle(c
         => new SceneSwitcher(

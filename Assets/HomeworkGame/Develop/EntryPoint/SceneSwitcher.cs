@@ -93,6 +93,8 @@ public class SceneSwitcher
     {
         _loadingCurtain.Show();
 
+        _currentSceneContainer?.Dispose();
+
         yield return _sceneLoader.LoadAsync(SceneId.Empty);
         yield return _sceneLoader.LoadAsync(SceneId.MainMenu);
 
@@ -111,6 +113,8 @@ public class SceneSwitcher
     private IEnumerator ProcessSwitchToGameplayScene(GameplayInputArgs gameplayInputArgs)
     {
         _loadingCurtain.Show();
+
+        _currentSceneContainer?.Dispose();
 
         yield return _sceneLoader.LoadAsync(SceneId.Empty);
         yield return _sceneLoader.LoadAsync(SceneId.Gameplay);

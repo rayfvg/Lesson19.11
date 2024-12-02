@@ -1,5 +1,7 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum GameModes
 {
@@ -9,6 +11,9 @@ public enum GameModes
 
 public class GameplayBootstrap : MonoBehaviour
 {
+    private ConfigsProviderService _startGameConfig;
+
+
     private DIContainer _container;
 
     private IGame _game;
@@ -18,27 +23,40 @@ public class GameplayBootstrap : MonoBehaviour
     {
         _container = container;
 
-       
+        InitializedConfig();
+        
         if (gameplayInputArgs.LevelNumber == (int)GameModes.Numbers)
+        {
             StartGameNumbers();
+            PlayerPrefs.SetInt("SceneId", (int)GameModes.Numbers);
+        }
         if (gameplayInputArgs.LevelNumber == (int)GameModes.Letters)
+        {
             StartGameLetters();
+            PlayerPrefs.SetInt("SceneId", (int)GameModes.Letters);
+        }
+
 
         yield return new WaitForSeconds(1);
 
         _initializedComplited = true;
     }
 
+    private void InitializedConfig()
+    {
+        _startGameConfig = _container.Resolve<ConfigsProviderService>();
+        _container.Initialize();
+    }
     private void StartGameNumbers()
     {
-        GameNumbers gameNumbers = new GameNumbers(_container);
-        _game = gameNumbers;
-        _container.Resolve<ICoroutinePerformer>().StartRefrorm(gameNumbers.ProcessGeneration());
+        Gameplay gameLetters = new Gameplay(_container, _startGameConfig.StartGameSettings.GetLatters(GameModes.Numbers));
+        _game = gameLetters;
+        _container.Resolve<ICoroutinePerformer>().StartRefrorm(gameLetters.ProcessGeneration());
     }
 
     private void StartGameLetters()
     {
-        GameLetters gameLetters = new GameLetters(_container);
+        Gameplay gameLetters = new Gameplay(_container, _startGameConfig.StartGameSettings.GetLatters(GameModes.Letters));
         _game = gameLetters;
         _container.Resolve<ICoroutinePerformer>().StartRefrorm(gameLetters.ProcessGeneration());
     }

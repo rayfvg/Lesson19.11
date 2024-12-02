@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
-public class GameLetters : IGame
+public class Gameplay : IGame, IDataReader<PlayerData>, IDataWriter<PlayerData>
 {
-    private List<char> _chars = new List<char> { 'a', 'b', 'c', 'd', 'f', 'q', 'w', 'e' };
+    private List<char> _chars; 
 
     private DIContainer _container;
+    private ConfigsProviderService _configProviderService;
 
     private List<char> _randomChars = new List<char>();
     private List<char> _userInput = new List<char>();
@@ -17,9 +19,10 @@ public class GameLetters : IGame
     private bool _itsWinner = true;
     private bool _isWorking = true;
 
-    public GameLetters(DIContainer container)
+    public Gameplay(DIContainer container, List<char> chars)
     {
         _container = container;
+        _chars = chars;
     }
 
     public void Update()
@@ -73,13 +76,30 @@ public class GameLetters : IGame
     private void ConditionOfVictory()
     {
         _itsWinner = true;
+        ISaveLoadSerivce saveLoadServise = _container.Resolve<ISaveLoadSerivce>();
+        WalletService wallet = _container.Resolve<WalletService>();
+        _configProviderService = _container.Resolve<ConfigsProviderService>();
 
         for (int i = 0; i < _userInput.Count; i++)
         {
             if (i >= _userInput.Count || _randomChars[i] != _userInput[i])
             {
                 _itsWinner = false;
+
+                wallet.Add(CurrencyTypes.Gold, _configProviderService.ValueOfMoney.ValueMoneyForLose);
+                _container.Resolve<PlayerDataProvider>().Save();
+
                 Debug.Log("Ошибка! Последовательность введена неверно.");
+
+
+                if (saveLoadServise.TryLoad(out PlayerData playerData))
+                {
+                    playerData.CountLose++;
+
+                    saveLoadServise.Save(playerData);
+                }
+                
+
                 _isWorking = false;
                 break;
             }
@@ -87,12 +107,26 @@ public class GameLetters : IGame
         if (_itsWinner == true)
         {
             Debug.Log("Успех! Последовательность введена правильно.");
+
+            wallet.Add(CurrencyTypes.Gold, _configProviderService.ValueOfMoney.ValueMoneyForWin);
+            _container.Resolve<PlayerDataProvider>().Save();
+
+            if (saveLoadServise.TryLoad(out PlayerData playerData))
+            {
+                playerData.CountWin++;
+
+                saveLoadServise.Save(playerData);
+            }
+
+           
+
             _isWorking = false;
         } 
     }
 
     private void SwitchScene()
     {
+        int sceneId = PlayerPrefs.GetInt("SceneId");
         if (_isWorking == false)
         {
             if (Input.GetKeyUp(KeyCode.Space))
@@ -100,8 +134,18 @@ public class GameLetters : IGame
                 if (_itsWinner)
                     _container.Resolve<SceneSwitcher>().ProcessSwitchSceneFor(new OutputGameplayArgs(new MainMenuInputArgs()));
                 if (!_itsWinner)
-                    _container.Resolve<SceneSwitcher>().ProcessSwitchSceneFor(new OutputGameplayArgs(new GameplayInputArgs(2)));
+                    _container.Resolve<SceneSwitcher>().ProcessSwitchSceneFor(new OutputGameplayArgs(new GameplayInputArgs(sceneId)));
             }
         }
+    }
+
+    public void ReadFrom(PlayerData data)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void WriteTo(PlayerData data)
+    {
+        throw new System.NotImplementedException();
     }
 }
