@@ -1,9 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Events;
 
-public class Gameplay : IGame, IDataReader<PlayerData>, IDataWriter<PlayerData>
+public class Gameplay : IGame
 {
     private List<char> _chars; 
 
@@ -19,7 +20,8 @@ public class Gameplay : IGame, IDataReader<PlayerData>, IDataWriter<PlayerData>
     private bool _itsWinner = true;
     private bool _isWorking = true;
 
-    public Gameplay(DIContainer container, List<char> chars)
+
+    public Gameplay(DIContainer container, List<char> chars, PlayerDataProvider playerDataProvider)
     {
         _container = container;
         _chars = chars;
@@ -49,7 +51,7 @@ public class Gameplay : IGame, IDataReader<PlayerData>, IDataWriter<PlayerData>
 
     private char RandomChar()
     {
-        int randomIndex = Random.Range(0, _chars.Count);
+        int randomIndex = UnityEngine.Random.Range(0, _chars.Count);
 
         return _chars[randomIndex];
     }
@@ -76,9 +78,10 @@ public class Gameplay : IGame, IDataReader<PlayerData>, IDataWriter<PlayerData>
     private void ConditionOfVictory()
     {
         _itsWinner = true;
-        ISaveLoadSerivce saveLoadServise = _container.Resolve<ISaveLoadSerivce>();
+
         WalletService wallet = _container.Resolve<WalletService>();
         _configProviderService = _container.Resolve<ConfigsProviderService>();
+        GameCounterService gameCounterService = _container.Resolve<GameCounterService>();
 
         for (int i = 0; i < _userInput.Count; i++)
         {
@@ -87,18 +90,9 @@ public class Gameplay : IGame, IDataReader<PlayerData>, IDataWriter<PlayerData>
                 _itsWinner = false;
 
                 wallet.Add(CurrencyTypes.Gold, _configProviderService.ValueOfMoney.ValueMoneyForLose);
-                _container.Resolve<PlayerDataProvider>().Save();
-
                 Debug.Log("Ошибка! Последовательность введена неверно.");
 
-
-                if (saveLoadServise.TryLoad(out PlayerData playerData))
-                {
-                    playerData.CountLose++;
-
-                    saveLoadServise.Save(playerData);
-                }
-                
+                gameCounterService.LoseGame();
 
                 _isWorking = false;
                 break;
@@ -108,20 +102,14 @@ public class Gameplay : IGame, IDataReader<PlayerData>, IDataWriter<PlayerData>
         {
             Debug.Log("Успех! Последовательность введена правильно.");
 
+            gameCounterService.WinnerGame();
+
             wallet.Add(CurrencyTypes.Gold, _configProviderService.ValueOfMoney.ValueMoneyForWin);
-            _container.Resolve<PlayerDataProvider>().Save();
 
-            if (saveLoadServise.TryLoad(out PlayerData playerData))
-            {
-                playerData.CountWin++;
+            _isWorking = false; 
+        }
 
-                saveLoadServise.Save(playerData);
-            }
-
-           
-
-            _isWorking = false;
-        } 
+        _container.Resolve<PlayerDataProvider>().Save();
     }
 
     private void SwitchScene()
@@ -137,15 +125,6 @@ public class Gameplay : IGame, IDataReader<PlayerData>, IDataWriter<PlayerData>
                     _container.Resolve<SceneSwitcher>().ProcessSwitchSceneFor(new OutputGameplayArgs(new GameplayInputArgs(sceneId)));
             }
         }
-    }
-
-    public void ReadFrom(PlayerData data)
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public void WriteTo(PlayerData data)
-    {
-        throw new System.NotImplementedException();
+        
     }
 }

@@ -33,12 +33,13 @@ public class EntryPoint : MonoBehaviour
 
         RegisterConfigsProviderService(projectConteiner);
 
+        RegisterGameCounterService(projectConteiner);
+
         projectConteiner.Initialize();
 
         projectConteiner.Resolve<ICoroutinePerformer>().StartRefrorm(_gameBootstrap.Run(projectConteiner));
     }
 
-    
 
     private void SetupAppSettings()
     {
@@ -46,6 +47,9 @@ public class EntryPoint : MonoBehaviour
         Application.targetFrameRate = 144;
     }
 
+    private void RegisterGameCounterService(DIContainer container)
+        => container.RegisterAsSingle(c => new GameCounterService(c.Resolve<PlayerDataProvider>(), c)).NonLazy();
+  
     private void RegisterWalletService(DIContainer container)
         => container.RegisterAsSingle(c => new WalletService(c.Resolve<PlayerDataProvider>())).NonLazy();
 

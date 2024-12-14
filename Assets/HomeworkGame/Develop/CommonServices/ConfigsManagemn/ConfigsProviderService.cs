@@ -12,10 +12,13 @@ public class ConfigsProviderService
     public StartGameSettings StartGameSettings { get; private set; }
     public ValueOfMoney ValueOfMoney { get; private set; }
 
+    public CurrencyIconsConfig CurrencyIconsConfig { get; private set; }
+
     public void LoadAll()
     {
         LoadStartGameSetting();
         LoadValueOfMoney();
+        LoadCurrencyIconsConfig();
     }
 
     private void LoadStartGameSetting()
@@ -23,4 +26,7 @@ public class ConfigsProviderService
 
     private void LoadValueOfMoney()
         => ValueOfMoney = _resourcesAssetsLoader.LoadResource<ValueOfMoney>("Configs/ValueOfMoney");
+
+    private void LoadCurrencyIconsConfig()
+       => CurrencyIconsConfig = _resourcesAssetsLoader.LoadResource<CurrencyIconsConfig>("Configs/CurrencyIconsConfig");
 }

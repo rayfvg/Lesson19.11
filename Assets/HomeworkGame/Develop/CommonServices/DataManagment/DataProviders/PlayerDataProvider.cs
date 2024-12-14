@@ -33,7 +33,7 @@ public class PlayerDataProvider : DataProvider<PlayerData>
         _configsProviderService = _conteiner.Resolve<ConfigsProviderService>();
 
         foreach (CurrencyTypes currencyType in Enum.GetValues(typeof(CurrencyTypes)))
-            walletData.Add(currencyType, 0); // _configsProviderService.ValueOfMoney.GetStartValueFor(currencyType));
+            walletData.Add(currencyType, _configsProviderService.ValueOfMoney.GetStartValueFor(currencyType));
 
         return walletData;
     }

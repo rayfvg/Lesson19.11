@@ -34,6 +34,7 @@ public class WalletService : IDataReader<PlayerData>, IDataWriter<PlayerData>
 
     public void ReadFrom(PlayerData data)
     {
+        Debug.Log("Я загрузил деньги");
         foreach (KeyValuePair<CurrencyTypes, int> currency in data.WalletData)
         {
             if (_currencies.ContainsKey(currency.Key))

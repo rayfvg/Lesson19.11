@@ -11,8 +11,8 @@ public class Bootstrap : MonoBehaviour
         loadingCurtain.Show();
 
         Debug.Log("Инициализация");
-        container.Resolve<PlayerDataProvider>().Load();
         container.Resolve<ConfigsProviderService>().LoadAll();
+        container.Resolve<PlayerDataProvider>().Load();
 
         yield return new WaitForSeconds(1.5f);
 

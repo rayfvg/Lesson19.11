@@ -12,7 +12,7 @@ public enum GameModes
 public class GameplayBootstrap : MonoBehaviour
 {
     private ConfigsProviderService _startGameConfig;
-
+    private GameplayRulesPresenter _gameplayUserInputFactory;
 
     private DIContainer _container;
 
@@ -24,7 +24,9 @@ public class GameplayBootstrap : MonoBehaviour
         _container = container;
 
         InitializedConfig();
-        
+        ProcessRegisrations();
+
+
         if (gameplayInputArgs.LevelNumber == (int)GameModes.Numbers)
         {
             StartGameNumbers();
@@ -42,6 +44,22 @@ public class GameplayBootstrap : MonoBehaviour
         _initializedComplited = true;
     }
 
+    private void ProcessRegisrations()
+    {
+        _container.RegisterAsSingle(c => new GameplayPresenterFactory(c)).NonLazy();
+
+        _container.RegisterAsSingle(c =>
+        {
+            GameplayUIRoot gameplayUIRoot = c.Resolve<ResourcesAssetsLoader>().LoadResource<GameplayUIRoot>("Gameplay/UI/GameplayUItRoot");
+            return Instantiate(gameplayUIRoot);
+        }).NonLazy();
+
+        GameplayUIRoot gameplayUIRoot = _container.Resolve<GameplayUIRoot>();
+        _gameplayUserInputFactory = _container.Resolve<GameplayPresenterFactory>().CreateGameplayUserInputPresent(gameplayUIRoot._inputUserView);
+
+        _gameplayUserInputFactory.Initialize();
+    }
+
     private void InitializedConfig()
     {
         _startGameConfig = _container.Resolve<ConfigsProviderService>();
@@ -49,14 +67,14 @@ public class GameplayBootstrap : MonoBehaviour
     }
     private void StartGameNumbers()
     {
-        Gameplay gameLetters = new Gameplay(_container, _startGameConfig.StartGameSettings.GetLatters(GameModes.Numbers));
+        Gameplay gameLetters = new Gameplay(_container, _startGameConfig.StartGameSettings.GetLatters(GameModes.Numbers), _container.Resolve<PlayerDataProvider>());
         _game = gameLetters;
         _container.Resolve<ICoroutinePerformer>().StartRefrorm(gameLetters.ProcessGeneration());
     }
 
     private void StartGameLetters()
     {
-        Gameplay gameLetters = new Gameplay(_container, _startGameConfig.StartGameSettings.GetLatters(GameModes.Letters));
+        Gameplay gameLetters = new Gameplay(_container, _startGameConfig.StartGameSettings.GetLatters(GameModes.Letters), _container.Resolve<PlayerDataProvider>());
         _game = gameLetters;
         _container.Resolve<ICoroutinePerformer>().StartRefrorm(gameLetters.ProcessGeneration());
     }
