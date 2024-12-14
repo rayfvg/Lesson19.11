@@ -17,6 +17,7 @@ public class GameplayBootstrap : MonoBehaviour
     private DIContainer _container;
 
     private IGame _game;
+    private Gameplay _gameNumbers;
 
     private bool _initializedComplited;
     public IEnumerator Run(DIContainer container, GameplayInputArgs gameplayInputArgs)
@@ -46,7 +47,7 @@ public class GameplayBootstrap : MonoBehaviour
 
     private void ProcessRegisrations()
     {
-        _container.RegisterAsSingle(c => new GameplayPresenterFactory(c)).NonLazy();
+        _container.RegisterAsSingle(c => new GameplayPresenterFactory(c, _gameNumbers));
 
         _container.RegisterAsSingle(c =>
         {
@@ -67,9 +68,9 @@ public class GameplayBootstrap : MonoBehaviour
     }
     private void StartGameNumbers()
     {
-        Gameplay gameLetters = new Gameplay(_container, _startGameConfig.StartGameSettings.GetLatters(GameModes.Numbers), _container.Resolve<PlayerDataProvider>());
-        _game = gameLetters;
-        _container.Resolve<ICoroutinePerformer>().StartRefrorm(gameLetters.ProcessGeneration());
+        Gameplay gameNumbers = new Gameplay(_container, _startGameConfig.StartGameSettings.GetLatters(GameModes.Numbers), _container.Resolve<PlayerDataProvider>());
+        _game = _gameNumbers;
+        _container.Resolve<ICoroutinePerformer>().StartRefrorm(gameNumbers.ProcessGeneration());
     }
 
     private void StartGameLetters()

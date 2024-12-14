@@ -6,12 +6,14 @@ using UnityEngine.Events;
 
 public class Gameplay : IGame
 {
-    private List<char> _chars; 
+    public event Action<char> CharsAdded;
+
+    public List<char> _chars;
 
     private DIContainer _container;
     private ConfigsProviderService _configProviderService;
 
-    private List<char> _randomChars = new List<char>();
+    public List<char> _randomChars = new List<char>();
     private List<char> _userInput = new List<char>();
 
     private int _difficulty = 3;
@@ -41,7 +43,8 @@ public class Gameplay : IGame
             char letter = RandomChar();
             Debug.Log(letter);
             _randomChars.Add(letter);
-
+            //сюда идеально было бы сделать событие и передать по 1 символу
+            CharsAdded?.Invoke(letter);
             yield return new WaitForSeconds(0.5f);
         }
 
