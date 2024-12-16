@@ -1,7 +1,9 @@
 using System.Collections;
+using System.ComponentModel;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class MainMenuBootstrap : MonoBehaviour
+public class MainMenuBootstrap : MonoBehaviour, IDataReader<PlayerData>, IDataWriter<PlayerData>
 {
     private DIContainer _container;
     private SceneSelection _sceneSelection;
@@ -51,7 +53,25 @@ public class MainMenuBootstrap : MonoBehaviour
         _currencyPresenter.Initialize();
         _gameCounerWinnerPresenter.Initialize();
         _gameCounterLosePresenter.Initialize();
+
+        mainMenuUIRoot._deleteSaveButton.onClick.AddListener(DeleteAllSave);
     }
 
-  
+    private void DeleteAllSave()
+    {
+        PlayerDataProvider data =  _container.Resolve<PlayerDataProvider>();
+        data.Reset();
+       
+        Debug.Log("Клик");
+    }
+
+    public void ReadFrom(PlayerData data)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void WriteTo(PlayerData data)
+    {
+        throw new System.NotImplementedException();
+    }
 }

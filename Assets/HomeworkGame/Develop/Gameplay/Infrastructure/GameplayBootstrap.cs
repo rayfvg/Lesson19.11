@@ -18,13 +18,17 @@ public class GameplayBootstrap : MonoBehaviour
 
     private IGame _game;
     private Gameplay _gameNumbers;
+    private Gameplay _gameLatters;
 
     private bool _initializedComplited;
     public IEnumerator Run(DIContainer container, GameplayInputArgs gameplayInputArgs)
     {
         _container = container;
+        
 
         InitializedConfig();
+        _gameNumbers = new Gameplay(_container, _startGameConfig.StartGameSettings.GetLatters(GameModes.Numbers), _container.Resolve<PlayerDataProvider>());
+        _gameLatters = new Gameplay(_container, _startGameConfig.StartGameSettings.GetLatters(GameModes.Letters), _container.Resolve<PlayerDataProvider>());
         ProcessRegisrations();
 
 
@@ -47,7 +51,7 @@ public class GameplayBootstrap : MonoBehaviour
 
     private void ProcessRegisrations()
     {
-        _container.RegisterAsSingle(c => new GameplayPresenterFactory(c, _gameNumbers));
+        _container.RegisterAsSingle(c => new GameplayPresenterFactory(c, _gameNumbers, _gameLatters));
 
         _container.RegisterAsSingle(c =>
         {
@@ -68,16 +72,14 @@ public class GameplayBootstrap : MonoBehaviour
     }
     private void StartGameNumbers()
     {
-        Gameplay gameNumbers = new Gameplay(_container, _startGameConfig.StartGameSettings.GetLatters(GameModes.Numbers), _container.Resolve<PlayerDataProvider>());
         _game = _gameNumbers;
-        _container.Resolve<ICoroutinePerformer>().StartRefrorm(gameNumbers.ProcessGeneration());
+        _container.Resolve<ICoroutinePerformer>().StartRefrorm(_gameNumbers.ProcessGeneration());
     }
 
     private void StartGameLetters()
     {
-        Gameplay gameLetters = new Gameplay(_container, _startGameConfig.StartGameSettings.GetLatters(GameModes.Letters), _container.Resolve<PlayerDataProvider>());
-        _game = gameLetters;
-        _container.Resolve<ICoroutinePerformer>().StartRefrorm(gameLetters.ProcessGeneration());
+        _game = _gameLatters;
+        _container.Resolve<ICoroutinePerformer>().StartRefrorm(_gameLatters.ProcessGeneration());
     }
 
     private void Update()

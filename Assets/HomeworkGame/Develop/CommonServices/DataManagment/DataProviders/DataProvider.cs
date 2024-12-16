@@ -54,7 +54,7 @@ public abstract class DataProvider<TData> where TData : ISaveData
 
     protected abstract TData GetOriginData();
 
-    private void Reset()
+    public void Reset()
     {
         Data = GetOriginData();
         Save();
